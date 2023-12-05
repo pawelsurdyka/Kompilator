@@ -1,0 +1,176 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    COLON
+    COMMA
+    DOTDIV
+    DOTMUL
+    FLOATNUM
+    INTNUM
+    LBRACE
+    LBRACKET
+    LPAREN
+    RBRACE
+    RBRACKET
+    RPAREN
+    SEMICOLON
+    TRANSPOSE
+
+Grammar
+
+Rule 0     S' -> start
+Rule 1     start -> <empty>
+Rule 2     start -> morestatements
+Rule 3     morestatements -> block
+Rule 4     morestatements -> statement morestatements
+Rule 5     block -> statement
+Rule 6     block -> { morestatements }
+Rule 7     statement -> ifstatement
+Rule 8     statement -> loop
+Rule 9     statement -> expr ;
+Rule 10    statement -> returnstatement ;
+Rule 11    statement -> assignstatement ;
+Rule 12    statement -> printstatement ;
+Rule 13    statement -> BREAK ;
+Rule 14    statement -> CONTINUE ;
+Rule 15    returnstatement -> RETURN
+Rule 16    returnstatement -> RETURN expr
+Rule 17    printstatement -> PRINT printables
+Rule 18    printables -> printable
+Rule 19    printables -> printable , printables
+Rule 20    printable -> expr
+Rule 21    assignstatement -> assignable ASSIGN expr
+Rule 22    assignstatement -> assignable ADDASSIGN expr
+Rule 23    assignstatement -> assignable SUBASSIGN expr
+Rule 24    assignstatement -> assignable MULASSIGN expr
+Rule 25    assignstatement -> assignable DIVASSIGN expr
+Rule 26    assignable -> ID
+Rule 27    assignable -> ID [ expr , expr ]
+Rule 28    expr -> assignable
+Rule 29    expr -> INTNUMBER
+Rule 30    expr -> FLOATNUMBER
+Rule 31    expr -> STRING
+Rule 32    expr -> MINUS expr
+Rule 33    expr -> expr '
+Rule 34    expr -> specialmatrixword ( expr )
+Rule 35    expr -> ( expr )
+Rule 36    expr -> [ matrixinitializer ]
+Rule 37    expr -> expr PLUS expr
+Rule 38    expr -> expr MINUS expr
+Rule 39    expr -> expr TIMES expr
+Rule 40    expr -> expr DIVIDE expr
+Rule 41    expr -> expr DOTADD expr
+Rule 42    expr -> expr DOTSUB expr
+Rule 43    expr -> expr MTIMES expr
+Rule 44    expr -> expr MDIVIDE expr
+Rule 45    expr -> expr EQ expr
+Rule 46    expr -> expr NE expr
+Rule 47    expr -> expr GT expr
+Rule 48    expr -> expr LT expr
+Rule 49    expr -> expr LE expr
+Rule 50    expr -> expr GE expr
+Rule 51    specialmatrixword -> ZEROS
+Rule 52    specialmatrixword -> ONES
+Rule 53    specialmatrixword -> EYE
+Rule 54    ifstatement -> IF ( expr ) block
+Rule 55    ifstatement -> IF ( expr ) block ELSE block
+Rule 56    loop -> forloop
+Rule 57    loop -> whileloop
+Rule 58    forloop -> FOR ID ASSIGN rangeoperator block
+Rule 59    whileloop -> WHILE ( expr ) block
+Rule 60    rangeoperator -> expr : expr
+Rule 61    matrixinitializer -> innerlist
+Rule 62    matrixinitializer -> morelist
+Rule 63    morelist -> vector
+Rule 64    morelist -> vector , morelist
+Rule 65    vector -> [ innerlist ]
+Rule 66    innerlist -> expr
+Rule 67    innerlist -> expr , innerlist
+
+Terminals, with rules where they appear
+
+'                    : 33
+(                    : 34 35 54 55 59
+)                    : 34 35 54 55 59
+,                    : 19 27 64 67
+:                    : 60
+;                    : 9 10 11 12 13 14
+ADDASSIGN            : 22
+ASSIGN               : 21 58
+BREAK                : 13
+COLON                : 
+COMMA                : 
+CONTINUE             : 14
+DIVASSIGN            : 25
+DIVIDE               : 40
+DOTADD               : 41
+DOTDIV               : 
+DOTMUL               : 
+DOTSUB               : 42
+ELSE                 : 55
+EQ                   : 45
+EYE                  : 53
+FLOATNUM             : 
+FOR                  : 58
+GE                   : 50
+GT                   : 47
+ID                   : 26 27 58
+IF                   : 54 55
+INTNUM               : 
+LBRACE               : 
+LBRACKET             : 
+LE                   : 49
+LPAREN               : 
+LT                   : 48
+MINUS                : 32 38
+MULASSIGN            : 24
+NE                   : 46
+ONES                 : 52
+PLUS                 : 37
+PRINT                : 17
+RBRACE               : 
+RBRACKET             : 
+RETURN               : 15 16
+RPAREN               : 
+SEMICOLON            : 
+STRING               : 31
+SUBASSIGN            : 23
+TIMES                : 39
+TRANSPOSE            : 
+WHILE                : 59
+ZEROS                : 51
+[                    : 27 36 65
+]                    : 27 36 65
+error                : 
+{                    : 6
+}                    : 6
+
+Nonterminals, with rules where they appear
+
+FLOATNUMBER          : 30
+INTNUMBER            : 29
+MDIVIDE              : 44
+MTIMES               : 43
+assignable           : 21 22 23 24 25 28
+assignstatement      : 11
+block                : 3 54 55 55 58 59
+expr                 : 9 16 20 21 22 23 24 25 27 27 32 33 34 35 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 54 55 59 60 60 66 67
+forloop              : 56
+ifstatement          : 7
+innerlist            : 61 65 67
+loop                 : 8
+matrixinitializer    : 36
+morelist             : 62 64
+morestatements       : 2 4 6
+printable            : 18 19
+printables           : 17 19
+printstatement       : 12
+rangeoperator        : 58
+returnstatement      : 10
+specialmatrixword    : 34
+start                : 0
+statement            : 4 5
+vector               : 63 64
+whileloop            : 57
+
