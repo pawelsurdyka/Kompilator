@@ -141,32 +141,37 @@ class Variable(Expression):  # ID
 
 
 class MatrixElement(Expression):
-    def __init__(self, variable, i, j, line_no=None):
+    def __init__(self, variable, vector, line_no=None):
         self.variable = variable
-        self.i = i
-        self.j = j
+        self.vector = vector
         self.line_no = line_no
 
 
-class Matrix(Expression):
-    def __init__(self, matrix, line_no=None):
-        self.matrix = matrix
+# class Matrix(Expression):
+#     def __init__(self, matrix, line_no=None):
+#         self.matrix = matrix
+#         self.line_no = line_no
+#
+#
+# class MatrixRows(Node):
+#     def __init__(self, matrix_rows, vector, line_no=None):
+#         if matrix_rows is not None:
+#             self.matrix_rows = matrix_rows.matrix_rows + [vector]
+#         else:
+#             self.matrix_rows = [vector]
+#         self.line_no = line_no
+
+
+class Vector(Node):
+    def __init__(self, vector_elements, line_no=None):
+        self.vector_elements = vector_elements
         self.line_no = line_no
 
 
-class MatrixRows(Node):
-    def __init__(self, matrix_rows, matrix_values, line_no=None):
-        if matrix_rows is not None:
-            self.matrix_rows = matrix_rows.matrix_rows + [matrix_values]
-        else:
-            self.matrix_rows = [matrix_values]
-        self.line_no = line_no
-
-
-class MatrixValues(Node):
-    def __init__(self, matrix_values, expression, line_no=None):
-        if matrix_values is not None:
-            self.matrix_values = matrix_values.matrix_values + [expression]
+class VectorElements(Node):
+    def __init__(self, vector_elements, expression, line_no=None):
+        if vector_elements is not None:
+            self.matrix_values = vector_elements.matrix_values + [expression]
         else:
             self.matrix_values = [expression]
         self.line_no = line_no

@@ -1,7 +1,11 @@
+#!/usr/bin/python
+
 from scanner import Scanner
 # import ply.yacc as yacc
 
+
 import AST
+
 
 class Mparser(object):
     def __init__(self):
@@ -51,19 +55,23 @@ class Mparser(object):
         statement : if_statement
                    | while_loop
                    | for_loop
-                   | break_statement
-                   | continue_statement
                    | return_statement
                    | print_statement
                    | assignment
         """
-        if p[1] == "break_statement":
-            p[0] = AST.BreakStatement(line_no=p.lineno(1))
+        p[0] = p[1]
 
-        elif p[1] == "continue_statement":
-            p[0] = AST.ContinueStatement(line_no=p.lineno(1))
-        else:
-            p[0] = p[1]
+    def p_statement2(self, p):
+        """
+        statement : break_statement
+        """
+        p[0] = AST.BreakStatement(line_no=p.lineno(1))
+
+    def p_statement3(self, p):
+        """
+        statement : continue_statement
+        """
+        p[0] = AST.ContinueStatement(line_no=p.lineno(1))
 
     def p_statement_brace(self, p):
         """
@@ -83,9 +91,9 @@ class Mparser(object):
 
     def p_matrix_element(self, p):
         """
-        matrix_element : ID LBRACKET expression COMMA expression RBRACKET
+        matrix_element : ID LBRACKET vector_elements RBRACKET
         """
-        p[0] = AST.MatrixElement(AST.Variable(p[1]), p[3], p[5], line_no=p.lineno(1))
+        p[0] = AST.MatrixElement(AST.Variable(p[1]), p[3], line_no=p.lineno(1))
 
     def p_lvalue_matrix_element(self, p):
         """
@@ -173,26 +181,26 @@ class Mparser(object):
 
     def p_matrix_expression(self, p):
         """
-        expression : matrix
-                    | matrix_function
+        expression : matrix_function
+                    | vector
         """
         p[0] = p[1]
 
     def p_statement_eye(self, p):
         """
-        matrix_function : EYE LPAREN expression RPAREN
+        matrix_function : EYE LPAREN vector_elements RPAREN
         """
         p[0] = AST.MatrixFunction('EYE', p[3], line_no=p.lineno(1))
 
     def p_statement_zeros(self, p):
         """
-        matrix_function : ZEROS LPAREN expression RPAREN
+        matrix_function : ZEROS LPAREN vector_elements RPAREN
         """
         p[0] = AST.MatrixFunction('ZEROS', p[3], line_no=p.lineno(1))
 
     def p_statement_ones(self, p):
         """
-        matrix_function : ONES LPAREN expression RPAREN
+        matrix_function : ONES LPAREN vector_elements RPAREN
         """
         p[0] = AST.MatrixFunction('ONES', p[3], line_no=p.lineno(1))
 
@@ -207,7 +215,6 @@ class Mparser(object):
         if_statement : IF LPAREN condition RPAREN statement ELSE statement
         """
         p[0] = AST.IfStatement(p[3], p[5], p[7], line_no=p.lineno(1))
-
 
     def p_while_loop(self, p):
         """
@@ -253,36 +260,42 @@ class Mparser(object):
 
     def p_print_statement(self, p):
         """
-        print_statement : PRINT matrix_values SEMICOLON
+        print_statement : PRINT vector_elements SEMICOLON
         """
         p[0] = AST.PrintStatement(p[2], line_no=p.lineno(1))
 
-    def p_matrix(self, p):
-        """
-        matrix : LBRACKET matrix_rows RBRACKET
-        """
-        p[0] = AST.Matrix(p[2], line_no=p.lineno(1))
+    # def p_matrix(self, p):
+    #     """
+    #     matrix : LBRACKET matrix_rows RBRACKET
+    #     """
+    #     p[0] = AST.Matrix(p[2], line_no=p.lineno(1))
+    #
+    # def p_matrix_rows(self, p):
+    #     """
+    #     matrix_rows : vector
+    #     """
+    #     p[0] = AST.MatrixRows(None, p[1], line_no=p.lineno(1))
+    #
+    # def p_matrix_rows2(self, p):
+    #     """
+    #     matrix_rows : matrix_rows COMMA vector
+    #     """
+    #     p[0] = AST.MatrixRows(p[1], p[3], line_no=p.lineno(1))
 
-    def p_matrix_rows(self, p):
+    def p_vector(self, p):
         """
-        matrix_rows : LBRACKET matrix_values RBRACKET
+        vector : LBRACKET vector_elements RBRACKET
         """
-        p[0] = AST.MatrixRows(None, p[2], line_no=p.lineno(1))
+        p[0] = AST.Vector(p[2], line_no=p.lineno(1))
 
-    def p_matrix_rows2(self, p):
+    def p_vector_elements(self, p):
         """
-        matrix_rows : matrix_rows COMMA LBRACKET matrix_values RBRACKET
+        vector_elements : expression
         """
-        p[0] = AST.MatrixRows(p[1], p[4], line_no=p.lineno(1))
+        p[0] = AST.VectorElements(None, p[1], line_no=p.lineno(1))
 
-    def p_matrix_values(self, p):
+    def p_vector_elements2(self, p):
         """
-        matrix_values : expression
+        vector_elements : vector_elements COMMA expression
         """
-        p[0] = AST.MatrixValues(None, p[1], line_no=p.lineno(1))
-
-    def p_matrix_values2(self, p):
-        """
-        matrix_values : matrix_values COMMA expression
-        """
-        p[0] = AST.MatrixValues(p[1], p[3], line_no=p.lineno(1))
+        p[0] = AST.VectorElements(p[1], p[3], line_no=p.lineno(1))
