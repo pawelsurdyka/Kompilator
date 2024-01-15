@@ -199,8 +199,8 @@ class TypeChecker(NodeVisitor):
         var = node.variable
         # if variable in for range is not declared
         if not symtab.get(var.name):
-            self.visit(node.variable)
             symtab.put(var.name, "int")
+            self.visit(node.variable)
         self.visit(node.statement)
         self.visit(node.range)
         symtab.popScope()
