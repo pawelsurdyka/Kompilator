@@ -93,12 +93,30 @@ class Interpreter(object):
     # TODO
     @when(AST.ForLoop)
     def visit(self, node):
-        pass
+        loop_range = node.range.accept(self)
+        if self.memoryStack.get(node.variable.name):
+            self.memoryStack.set(node.variable.name, loop_range.start)
+        else:
+            self.memoryStack.insert(node.variable.name, loop_range.start)
+
+        while self.memoryStack.get(node.variable.name) <= (loop_range.stop - 1):
+            try:
+                self.memoryStack.push(Memory("for"))
+                node.statement.accept(self)
+            except ContinueException:
+                continue
+            except BreakException:
+                break
+            finally:
+                self.memoryStack.pop()
+            new = self.memoryStack.get(node.variable.name) + 1
+            self.memoryStack.set(node.variable.name, new)
 
     # TODO
     @when(AST.Range)
     def visit(self, node):
-        pass
+        start, stop = node.start.accept(self), node.end.accept(self)
+        return range(start, stop + 1)
 
     @when(AST.BreakStatement)
     def visit(self, node):
@@ -128,6 +146,10 @@ class Interpreter(object):
         # if(node.op=='+') return r1+r2
         # elsif(node.op=='-') ...
         # but do not use python eval
+
+    @when(AST.Expression)
+    def visit(self, node):
+        return node.expression.accept(self)
 
     @when(AST.IntNum)
     def visit(self, node):
