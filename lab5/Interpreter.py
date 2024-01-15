@@ -42,7 +42,10 @@ class Interpreter(object):
         if node.lvalue.variable is not None:  # zwykła zmienna
             id = node.lvalue.variable.name
             if node.op == '=':
-                self.memoryStack.insert(id, expr)
+                if self.memoryStack.get(id) is None:
+                    self.memoryStack.insert(id, expr)
+                else:
+                    self.memoryStack.set(id, expr)
                 return expr
             else:  # +=, -=, *=, /=
                 lvalue = self.memoryStack.get(id)
@@ -71,26 +74,30 @@ class Interpreter(object):
                     matrix[indexes[0]][indexes[1]] = new_expr
                     return new_expr
 
-    # TODO: self.memoryStack.push(Memory()) or sth like that
     @when(AST.IfStatement)
     def visit(self, node):
         if node.condition.accept(self):
+            self.memoryStack.push(Memory("if"))
             node.statement.accept(self)
+            self.memoryStack.pop()
         elif node.else_statement is not None:
+            self.memoryStack.push(Memory("else"))
             node.else_statement.accept(self)
+            self.memoryStack.pop()
 
-    # TODO: self.memoryStack.push(Memory()) or sth like that
     @when(AST.WhileLoop)
     def visit(self, node):
         while node.condition.accept(self):
             try:
+                self.memoryStack.push(Memory("while"))
                 node.statement.accept(self)
             except BreakException:
                 break
             except ContinueException:
-                pass
+                continue
+            finally:
+                self.memoryStack.pop()
 
-    # TODO
     @when(AST.ForLoop)
     def visit(self, node):
         loop_range = node.range.accept(self)
@@ -112,7 +119,6 @@ class Interpreter(object):
             new = self.memoryStack.get(node.variable.name) + 1
             self.memoryStack.set(node.variable.name, new)
 
-    # TODO
     @when(AST.Range)
     def visit(self, node):
         start, stop = node.start.accept(self), node.end.accept(self)
@@ -161,7 +167,7 @@ class Interpreter(object):
 
     @when(AST.String)
     def visit(self, node):
-        return node.value
+        return node.value[1:-1]
 
     @when(AST.Variable)
     def visit(self, node):
