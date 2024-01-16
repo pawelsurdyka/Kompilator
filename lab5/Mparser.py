@@ -8,7 +8,7 @@ class Mparser(object):
     def __init__(self):
         self.scanner = Scanner()
         self.scanner.build()
-        # self.no_error = True
+        self.is_error = False
 
     tokens = Scanner.tokens
 
@@ -24,6 +24,7 @@ class Mparser(object):
     )
 
     def p_error(self, p):
+        self.is_error = True
         if p:
             print("Syntax error at line {0}: LexToken({1}, '{2}')".format(p.lineno, p.type, p.value))
         else:

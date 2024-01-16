@@ -20,8 +20,10 @@ if __name__ == '__main__':
     text = file.read()
     ast = parser.parse(text, lexer=Mparser.scanner)
 
-    # ast.print_tree(0)
-    typeChecker = TypeChecker()
-    typeChecker.visit(ast)  # or alternatively ast.accept(typeChecker)
+    if not Mparser.is_error:
 
-    ast.accept(Interpreter())
+        # ast.print_tree(0)
+        typeChecker = TypeChecker()
+        typeChecker.visit(ast)  # or alternatively ast.accept(typeChecker)
+        if not typeChecker.is_error:
+            ast.accept(Interpreter())

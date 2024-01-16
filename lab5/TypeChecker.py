@@ -1,9 +1,3 @@
-# import AST
-# #import SymbolTable
-# from SymbolTable import VectorSymbol,VariableSymbol,MatrixSymbol,SymbolTable
-# from collections import defaultdict
-# from functools import reduce
-
 from collections import defaultdict
 
 import AST
@@ -103,6 +97,9 @@ class NodeVisitor(object):
 
 
 class TypeChecker(NodeVisitor):
+    def __init__(self):
+        self.is_error = False
+
     def visit_Node(self, node):
         self.visit(node.left)
         self.visit(node.right)
@@ -124,35 +121,31 @@ class TypeChecker(NodeVisitor):
         loop_scope = symtab.getScope("loop")
         if not loop_scope:
             # ERROR
-            print("Continue outside loop scope", node.line_no)
-            pass
+            self.print_error("Continue outside loop scope", node.line_no)
 
     def visit_BreakStatement(self, node):
         loop_scope = symtab.getScope("loop")
         if not loop_scope:
             # ERROR
-            print('Break outside loop scope', node.line_no)
-            pass
+            self.print_error('Break outside loop scope', node.line_no)
 
     def visit_Assignment(self, node):
         a = self.visit(node.expression)
         if node.op != '=':
             if symtab.get(node.lvalue.variable.name) is None:
-                print("Undeclared variable", node.line_no)
+                self.print_error(f"Undeclared variable {node.lvalue.variable.name}", node.line_no)
                 return
         if node.lvalue.variable is None:
             if symtab.get(node.lvalue.matrix_element.variable.name) is None:
-                print("Undeclared variable", node.line_no)
+                self.print_error(f"Undeclared variable {node.lvalue.matrix_element.variable.name}", node.line_no)
         else:
             symtab.put(node.lvalue.variable.name, a)
-        # if isinstance(node.expression, AST.MatrixFunction):
-        #     symtab.put(node.lvalue.variable.name, node.expression.function_name)
 
     def visit_Variable(self, node):
         var = symtab.get(node.name)
         if var:
             return symtab.get(node.name).type
-        print("Undeclared variable", node.line_no)
+        self.print_error(f"Undeclared variable {node.lvalue.variable.name}", node.line_no)
         return None
 
     def visit_IntNum(self, node):
@@ -168,7 +161,7 @@ class TypeChecker(NodeVisitor):
         function_scope = symtab.getScope("function")
         if not function_scope:
             # ERROR
-            print('Return outside function scope', node.line_no)
+            self.print_error('Return outside function scope', node.line_no)
             pass
         if node.expression:
             self.visit(node.expression)
@@ -181,10 +174,10 @@ class TypeChecker(NodeVisitor):
                 if isinstance(column, AST.Vector):
                     n_i = column.vector_elements.length
                     if n != n_i:
-                        print("Matrix with rows of different lengths ", node.line_no)
+                        self.print_error("Matrix with rows of different lengths ", node.line_no)
                         break
                 else:
-                    print("Matrix can be initialized only with vectors! ", node.line_no)
+                    self.print_error("Matrix can be initialized only with vectors! ", node.line_no)
                     break
             return "Matrix", (node.vector_elements.length, n)
         else:
@@ -216,56 +209,52 @@ class TypeChecker(NodeVisitor):
     def visit_Expression(self, node):
         return self.visit(node.expression)
 
-    # TODO: błędy w przypadku MatrixElement
     def visit_BinaryExpression(self, node):
         l_type = self.visit(node.left)
         r_type = self.visit(node.right)
         if not isinstance(l_type, tuple):  # int, float, str
             if isinstance(r_type, tuple):  # vector matrix
-                print("Different types (uncastable)", l_type, r_type[0], node.line_no)
+                self.print_error(f"Different types (uncastable): {l_type} and {r_type[0]}", node.line_no)
                 return
             else:
                 if r_type not in ttype[node.op][l_type]:
-                    print("Different types (uncastable)", l_type, r_type, node.line_no)
+                    self.print_error(f"Different types (uncastable): {l_type} and {r_type}", node.line_no)
                     return
                 else:
                     return ttype[node.op][l_type][r_type]
         elif l_type[0] == 'Vector':
             if not isinstance(l_type, tuple):
-                print("Different types (uncastable)", l_type[0], r_type, node.line_no)
+                self.print_error(f"Different types (uncastable): {l_type[0]} and {r_type}", node.line_no)
                 return
             elif r_type[0] == 'Matrix':
-                print("Different types (uncastable)", l_type[0], r_type[0], node.line_no)
+                self.print_error(f"Different types (uncastable): {l_type[0]} and {r_type[0]}", node.line_no)
                 return
             else:  # vector and vector
-                #     if len(node.left.matrix_values) != len(node.right.matrix_values):
-                #         print("Vectors with different lengths", node.line_no)
-                #         return
                 if node.op == '*':
-                    return "float"  # lub int?
+                    return "float"
                 elif node.op == '/':
-                    print("Wrong operation for vectors", node.op, node.line_no)
+                    self.print_error(f"Wrong operation for vectors: {node.op}", node.line_no)
                     return
                 else:
-                    return l_type  # pytanie czy nie trzeba jakiejś kopii zrobić
+                    return l_type
 
         elif l_type[0] == 'Matrix':
             if not isinstance(l_type, tuple):
-                print("Different types (uncastable)", l_type[0], r_type, node.line_no)
+                self.print_error(f"Different types (uncastable): {l_type[0]} and {r_type}", node.line_no)
                 return
             elif r_type[0] == 'Vector':
-                print("Different types (uncastable)", l_type[0], r_type[0], node.line_no)
+                self.print_error(f"Different types (uncastable): {l_type[0]} and {r_type[0]}", node.line_no)
                 return
             else:  # matrix and matrix
-                return l_type  # trzeba dołożoć sprawdzenie wymiarów
+                return l_type
 
     def visit_Range(self, node):
         s_type = self.visit(node.start)
         e_type = self.visit(node.end)
         if s_type != "int" or e_type != "int":
-            print("Range have to be form int to int ", node.line_no)
+            self.print_error("Range have to be form int to int ", node.line_no)
         if s_type == None or e_type == None:
-            print("Undeclared variables in range scope ", node.line_no)
+            self.print_error("Undeclared variables in range scope ", node.line_no)
 
     def visit_PrintStatement(self, node):
         self.visit(node.arguments)
@@ -277,7 +266,7 @@ class TypeChecker(NodeVisitor):
         type1 = self.visit(node.expression)
         if not isinstance(type1, tuple):
             # error
-            print("Trying to transpose non-matrix entity", node.line_no)
+            self.print_error("Trying to transpose non-matrix entity", node.line_no)
             pass
 
     def visit_LValue(self, node):
@@ -289,22 +278,22 @@ class TypeChecker(NodeVisitor):
     def visit_MatrixElement(self, node):
         self.visit(node.variable)
         self.visit(node.vector)
+        return "float"
 
     def visit_MatrixFunction(self, node):
         name = node.function_name
         n_arguments = node.argument.length
         if name == 'EYE' and n_arguments != 1:
-            print("Wrong number of arguments in function", name, node.line_no)
+            self.print_error(f"Wrong number of arguments in function {name}", node.line_no)
             return
         elif n_arguments != 1 and n_arguments != 2:
-            print("Wrong number of arguments in function", name, node.line_no)
+            self.print_error(f"Wrong number of arguments in function {name}", node.line_no)
             return
         else:
             self.visit(node.argument)
 
         if isinstance(node.argument.matrix_values[0], AST.Variable):
-            first_arg = symtab.get(
-                node.argument.matrix_values[0].name)  # jeśli jest zmienna to będzie tylko typ a nie wartość
+            first_arg = symtab.get(node.argument.matrix_values[0].name)
         else:
             first_arg = node.argument.matrix_values[0].value
 
@@ -323,4 +312,8 @@ class TypeChecker(NodeVisitor):
         l_side = self.visit(node.left)
         r_side = self.visit(node.rigth)
         if l_side != r_side:
-            print("Wrong elements in condition", node.line_no)
+            self.print_error("Wrong elements in condition", node.line_no)
+
+    def print_error(self, message, line_no):
+        self.is_error = True
+        print(f'Error in line {line_no}: {message}.')

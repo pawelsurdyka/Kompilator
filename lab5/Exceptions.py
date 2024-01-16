@@ -10,3 +10,7 @@ class BreakException(Exception):
 
 class ContinueException(Exception):
     pass
+
+
+class InterpretationException(Exception):
+    pass

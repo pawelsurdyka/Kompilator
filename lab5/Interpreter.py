@@ -1,5 +1,4 @@
 import AST
-import SymbolTable
 from Memory import *
 from Exceptions import *
 from visit import *
@@ -12,8 +11,6 @@ class Interpreter(object):
 
     def __init__(self):
         self.memoryStack = MemoryStack()
-        # self.declaredType = None
-        # self.isFunctionScope = False
 
     @on('node')
     def visit(self, node):
@@ -21,7 +18,10 @@ class Interpreter(object):
 
     @when(AST.Program)
     def visit(self, node):
-        node.statements.accept(self)
+        try:
+            node.statements.accept(self)
+        except InterpretationException:
+            pass
 
     @when(AST.Scope)
     def visit(self, node):
@@ -49,7 +49,7 @@ class Interpreter(object):
                 return expr
             else:  # +=, -=, *=, /=
                 lvalue = self.memoryStack.get(id)
-                new_expr = self.evaluate(lvalue, node.op, expr)
+                new_expr = self.evaluate(lvalue, node.op, expr, node.line_no)
                 self.memoryStack.set(id, new_expr)
                 return new_expr
         else:  # A[0], A[0, 0]
@@ -65,12 +65,12 @@ class Interpreter(object):
             else:
                 if len(indexes) == 1:
                     lvalue = matrix[indexes[0]]
-                    new_expr = self.evaluate(lvalue, node.op, expr)
+                    new_expr = self.evaluate(lvalue, node.op, expr, node.line_no)
                     matrix[indexes[0]] = new_expr
                     return new_expr
                 elif len(indexes) == 2:
                     lvalue = matrix[indexes[0]][indexes[1]]
-                    new_expr = self.evaluate(lvalue, node.op, expr)
+                    new_expr = self.evaluate(lvalue, node.op, expr, node.line_no)
                     matrix[indexes[0]][indexes[1]] = new_expr
                     return new_expr
 
@@ -147,11 +147,7 @@ class Interpreter(object):
     def visit(self, node):
         r1 = node.left.accept(self)
         r2 = node.right.accept(self)
-        return self.evaluate(r1, node.op, r2)
-        # try sth smarter than:
-        # if(node.op=='+') return r1+r2
-        # elsif(node.op=='-') ...
-        # but do not use python eval
+        return self.evaluate(r1, node.op, r2, node.line_no)
 
     @when(AST.Expression)
     def visit(self, node):
@@ -216,9 +212,9 @@ class Interpreter(object):
     def visit(self, node):
         r1 = node.left.accept(self)
         r2 = node.right.accept(self)
-        return self.evaluate(r1, node.op, r2)
+        return self.evaluate(r1, node.op, r2, node.line_no)
 
-    def evaluate(self, left, op, right):
+    def evaluate(self, left, op, right, line_no):
         try:
             if op == '+' or op == '+=' or op == '.+':
                 if not isinstance(left, list) and not isinstance(right, list):
@@ -262,13 +258,12 @@ class Interpreter(object):
             else:  # operatory porównania
                 return eval(f'{left} {op} {right}')
 
-        except ZeroDivisionError as e:
-            print(e)
+        except (ZeroDivisionError, ValueError) as e:
+            print(f'Interpretation error in line {line_no}: {e}.')
+            raise InterpretationException
             return
-        except ValueError as e:
-            print(e)
-            return
-        print('Invalid operation')
+        print(f'Interpretation error in line {line_no}: invalid operation.')
+        raise InterpretationException
 
     # zip with checking lengths
     def zip_(self, *iterables):
