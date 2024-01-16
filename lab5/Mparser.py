@@ -1,7 +1,7 @@
 from scanner import Scanner
 
-
 import AST
+from colorama import Fore, Style
 
 
 class Mparser(object):
@@ -25,10 +25,12 @@ class Mparser(object):
 
     def p_error(self, p):
         self.is_error = True
+        print(Fore.RED, end='')
         if p:
             print("Syntax error at line {0}: LexToken({1}, '{2}')".format(p.lineno, p.type, p.value))
         else:
             print("Unexpected end of input")
+        print(Style.RESET_ALL, end='')
 
     def p_program(self, p):
         """

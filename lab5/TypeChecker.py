@@ -2,6 +2,7 @@ from collections import defaultdict
 
 import AST
 import SymbolTable
+from colorama import Fore, Style
 
 symtab = SymbolTable.SymbolTable(None, "Symtab")
 typo = False
@@ -316,4 +317,4 @@ class TypeChecker(NodeVisitor):
 
     def print_error(self, message, line_no):
         self.is_error = True
-        print(f'Error in line {line_no}: {message}.')
+        print(Fore.RED + f'Error in line {line_no}: {message}.' + Style.RESET_ALL)

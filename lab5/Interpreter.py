@@ -3,6 +3,7 @@ from Memory import *
 from Exceptions import *
 from visit import *
 import sys
+from colorama import Fore, Style
 
 sys.setrecursionlimit(10000)
 
@@ -259,10 +260,10 @@ class Interpreter(object):
                 return eval(f'{left} {op} {right}')
 
         except (ZeroDivisionError, ValueError) as e:
-            print(f'Interpretation error in line {line_no}: {e}.')
+            print(Fore.RED + f'Interpretation error in line {line_no}: {e}.' + Style.RESET_ALL)
             raise InterpretationException
             return
-        print(f'Interpretation error in line {line_no}: invalid operation.')
+        print(Fore.RED + f'Interpretation error in line {line_no}: invalid operation.' + Style.RESET_ALL)
         raise InterpretationException
 
     # zip with checking lengths
