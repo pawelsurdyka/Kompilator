@@ -13,7 +13,7 @@ print [2, 3, 4] * [1, 2, 3];
 
 A = [3, 4, 3];
 B = [2, 4, 2];
-print A + B + 2;
+print A + B;
 if (A > B) {
 print A;
 }

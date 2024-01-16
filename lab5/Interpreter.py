@@ -78,13 +78,17 @@ class Interpreter(object):
     @when(AST.IfStatement)
     def visit(self, node):
         if node.condition.accept(self):
-            self.memoryStack.push(Memory("if"))
-            node.statement.accept(self)
-            self.memoryStack.pop()
+            try:
+                self.memoryStack.push(Memory("if"))
+                node.statement.accept(self)
+            finally:
+                self.memoryStack.pop()
         elif node.else_statement is not None:
-            self.memoryStack.push(Memory("else"))
-            node.else_statement.accept(self)
-            self.memoryStack.pop()
+            try:
+                self.memoryStack.push(Memory("else"))
+                node.else_statement.accept(self)
+            finally:
+                self.memoryStack.pop()
 
     @when(AST.WhileLoop)
     def visit(self, node):

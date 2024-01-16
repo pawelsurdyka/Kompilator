@@ -146,7 +146,7 @@ class TypeChecker(NodeVisitor):
         var = symtab.get(node.name)
         if var:
             return symtab.get(node.name).type
-        self.print_error(f"Undeclared variable {node.lvalue.variable.name}", node.line_no)
+        self.print_error(f"Undeclared variable {node.name}", node.line_no)
         return None
 
     def visit_IntNum(self, node):
