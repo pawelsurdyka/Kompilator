@@ -53,7 +53,8 @@ Zadanie polega na stworzeniu i wypisaniu abstrakcyjnego drzewa składni (ang. ab
    - instrukcje break, continue oraz return,
    - instrukcje print,
    - instrukcje złożone,
-   - tablice oraz ich zakresy. 
+   - tablice oraz ich zakresy.
+     
 Lab 4
 Zadanie jest kontynuacją poprzedniego zadania.
 Zadanie polega na stworzeniu analizatora błędów semantycznych.
